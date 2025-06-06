@@ -14,7 +14,7 @@ def composite_identity(f, g):
     False
     """
     "*** YOUR CODE HERE ***"
-
+    
 
 def sum_digits(y):
     """Return the sum of the digits of non-negative integer y."""
