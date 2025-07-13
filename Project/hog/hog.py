@@ -225,7 +225,7 @@ def is_always_roll(strategy, goal=GOAL):
     for i in range(goal):
         for j in range(goal):
             if not strategy(i, j) == test:
-                
+
                 return False
     return True
     # END PROBLEM 7
@@ -244,6 +244,12 @@ def make_averaged(original_function, times_called=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    def make_return(*args):
+        sum = 0
+        for _ in range(times_called):
+            sum += original_function(*args)
+        return sum / times_called
+    return make_return
     # END PROBLEM 8
 
 
@@ -257,6 +263,14 @@ def max_scoring_num_rolls(dice=six_sided, times_called=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    max, max_i = 0, 0
+    average = make_averaged(roll_dice, times_called)
+    for i in range(1, 11):
+        temp = average(i, dice)
+        if max < temp:
+            max = temp
+            max_i = i
+    return max_i
     # END PROBLEM 9
 
 
@@ -301,14 +315,20 @@ def boar_strategy(score, opponent_score, threshold=11, num_rolls=6):
     points, and returns NUM_ROLLS otherwise. Ignore score and Sus Fuss.
     """
     # BEGIN PROBLEM 10
-    return num_rolls  # Remove this line once implemented.
+    if boar_brawl(score, opponent_score) >= threshold:
+        return 0
+    else:
+        return num_rolls  # Remove this line once implemented.
     # END PROBLEM 10
 
 
 def sus_strategy(score, opponent_score, threshold=11, num_rolls=6):
     """This strategy returns 0 dice when your score would increase by at least threshold."""
     # BEGIN PROBLEM 11
-    return num_rolls  # Remove this line once implemented.
+    if sus_update(0, score, opponent_score) - score >= threshold:
+        return 0
+    else:
+        return num_rolls  # Remove this line once implemented.
     # END PROBLEM 11
 
 
@@ -318,7 +338,10 @@ def final_strategy(score, opponent_score):
     *** YOUR DESCRIPTION HERE ***
     """
     # BEGIN PROBLEM 12
-    return 6  # Remove this line once implemented.
+    if score < 85 and score > opponent_score:
+        return 0
+    else:
+        return 6  # Remove this line once implemented.
     # END PROBLEM 12
 
 
