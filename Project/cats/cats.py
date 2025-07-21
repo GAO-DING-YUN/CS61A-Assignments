@@ -38,6 +38,11 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    end = [i for i in paragraphs if select(i)]
+    if k < len(end):
+        return end[k]
+    else:
+        return ''
     # END PROBLEM 1
 
 
@@ -58,6 +63,15 @@ def about(subject):
 
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def search(paragraphs):
+        ssubject = [remove_punctuation(lower(i)) for i in subject]
+        paragraphs = split(remove_punctuation(lower(paragraphs)))
+        for i in ssubject:
+            for j in paragraphs:
+                if i == j:
+                    return True
+        return False
+    return search
     # END PROBLEM 2
 
 
@@ -88,6 +102,18 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    com = 0
+    inlen = len(typed_words)
+    solen = len(source_words)
+    minlen = min(inlen, solen)
+    if inlen == 0 and solen == 0:
+        return 100.0
+    if inlen == 0 or solen == 0:
+        return 0.0
+    for i in range(minlen):
+        if typed_words[i] == source_words[i]:
+            com += 1 
+    return com / inlen * 100 
     # END PROBLEM 3
 
 
@@ -106,6 +132,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, "Elapsed time must be positive"
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return (len(typed) / 5) / (elapsed / 60)
     # END PROBLEM 4
 
 
@@ -167,7 +194,20 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
-    # END PROBLEM 5
+    best_word = None
+    min_diff = float('inf')
+    for word in word_list: 
+        if word == typed_word:
+            return word
+        current_diff = diff_function(typed_word, word, limit)
+        if current_diff < min_diff:
+            min_diff = current_diff
+            best_word = word
+    if min_diff > limit:
+        return typed_word  
+    else:
+        return best_word 
+    # END PROBLEM 
 
 
 def furry_fixes(typed, source, limit):
@@ -193,7 +233,16 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def search(type, sour, diffsum):
+        if diffsum > limit:
+            return limit + 1
+        if not type or not sour:
+            return abs(len(type) - len(sour))
+        if type[0] == sour[0]:
+            return search(type[1:], sour[1:], diffsum)
+        else:
+            return  search(type[1:], sour[1:], diffsum + 1) + 1
+    return search(typed, source, 0)
     # END PROBLEM 6
 
 
@@ -214,22 +263,28 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
+    if not typed: # Base cases should go here, you may add more base cases as needed.
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return len(source)
+    if not source:
+        return len(typed)
+    if limit < 0:
+        return float('inf')
         # END
     # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
+    if typed[0] == source[0]: # Feel free to remove or add additional cases
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return minimum_mewtations(typed[1:], source[1:], limit)
         # END
     else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
+        add = minimum_mewtations(typed, source[1:], limit - 1) + 1
+        remove =minimum_mewtations(typed[1:], source, limit - 1) + 1
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1) + 1
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return min(add, remove, substitute)
         # END
 
 
@@ -276,6 +331,16 @@ def report_progress(typed, source, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    count = 0
+    typelen = len(typed)
+    for i in range(typelen):
+        if typed[i] == source[i]:
+            count += 1
+        else:
+            break
+    grade = count / len(source)
+    upload({'id': user_id, 'progress': grade})
+    return grade
     # END PROBLEM 8
 
 
@@ -300,8 +365,15 @@ def time_per_word(words, timestamps_per_player):
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
     times = []  # You may remove this line
+    for playtime in tpp:
+        plen = len(playtime)
+        oneplayer = []
+        for j in range(1, plen):
+            duration = playtime[j] - playtime[j - 1]
+            oneplayer.append(duration)
+        times.append(oneplayer)
     # END PROBLEM 9
-    return {'words': words, 'times': times}
+    return match(words, times)
 
 
 def fastest_words(words_and_times):
@@ -327,8 +399,61 @@ def fastest_words(words_and_times):
     word_indices = range(len(words))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    result = [[] for _ in player_indices]
+    
+    for i in word_indices:
+        mintime = float('inf')
+        fastplayer = 0
+        for j in player_indices:
+            ttime = time(words_and_times, j, i)
+            if ttime < mintime:
+                mintime = ttime
+                fastplayer = j
+        result[fastplayer].append(get_word(words_and_times, i))
+    return result
     # END PROBLEM 10
 
+def match(words, times):
+    """A data abstraction containing all words typed and their times.
+
+    Arguments:
+        words: A list of strings, each string representing a word typed.
+        times: A list of lists for how long it took for each player to type
+            each word.
+            times[i][j] = time it took for player i to type words[j].
+
+    Example input:
+        words: ['Hello', 'world']
+        times: [[5, 1], [4, 2]]
+    """
+    assert all([type(w) == str for w in words]), 'words should be a list of strings'
+    assert all([type(t) == list for t in times]), 'times should be a list of lists'
+    assert all([isinstance(i, (int, float)) for t in times for i in t]), 'times lists should contain numbers'
+    assert all([len(t) == len(words) for t in times]), 'There should be one word per time.'
+    return {"words": words, "times": times}
+
+def get_word(match, word_index):
+    """A utility function that gets the word with index word_index"""
+    assert 0 <= word_index < len(get_all_words(match)), "word_index out of range of words"
+    return get_all_words(match)[word_index]
+
+def time(match, player_num, word_index):
+    """A utility function for the time it took player_num to type the word at word_index"""
+    assert word_index < len(get_all_words(match)), "word_index out of range of words"
+    assert player_num < len(get_all_times(match)), "player_num out of range of players"
+    return get_all_times(match)[player_num][word_index]
+
+def get_all_words(match):
+    """A selector function for all the words in the match"""
+    return match["words"]
+
+def get_all_times(match):
+    """A selector function for all typing times for all players"""
+    return match["times"]
+
+def match_string(match):
+    """A helper function that takes in a match data abstraction and returns a string representation of it"""
+    return f"match({get_all_words(match)}, {get_all_times(match)})"
 
 def check_words_and_times(words_and_times):
     """Check that words_and_times is a {'words': words, 'times': times} dictionary
