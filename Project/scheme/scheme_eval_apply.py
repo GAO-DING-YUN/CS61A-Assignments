@@ -34,6 +34,9 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
     else:
         # BEGIN PROBLEM 3
         "*** YOUR CODE HERE ***"
+        procedure = scheme_eval(first, env)
+        args = rest.map(lambda exp: scheme_eval(exp, env))
+        return scheme_apply(procedure, args, env)
         # END PROBLEM 3
 
 def scheme_apply(procedure, args, env):
@@ -45,20 +48,32 @@ def scheme_apply(procedure, args, env):
     if isinstance(procedure, BuiltinProcedure):
         # BEGIN PROBLEM 2
         "*** YOUR CODE HERE ***"
+        arr = []
+        while args != nil:
+            val = args.first
+            arr.append(val)
+            args = args.rest
+        if procedure.need_env:
+                arr.append(env)
         # END PROBLEM 2
         try:
             # BEGIN PROBLEM 2
             "*** YOUR CODE HERE ***"
+            return procedure.py_func(*arr)
             # END PROBLEM 2
         except TypeError as err:
             raise SchemeError('incorrect number of arguments: {0}'.format(procedure))
     elif isinstance(procedure, LambdaProcedure):
         # BEGIN PROBLEM 9
         "*** YOUR CODE HERE ***"
+        new_frame = procedure.env.make_child_frame(procedure.formals, args)
+        return eval_all(procedure.body, new_frame)
         # END PROBLEM 9
     elif isinstance(procedure, MuProcedure):
         # BEGIN PROBLEM 11
         "*** YOUR CODE HERE ***"
+        child_frame = env.make_child_frame(procedure.formals, args)
+        return eval_all(procedure.body, child_frame)
         # END PROBLEM 11
     else:
         assert False, "Unexpected procedure: {}".format(procedure)
@@ -79,7 +94,14 @@ def eval_all(expressions, env):
     2
     """
     # BEGIN PROBLEM 6
-    return scheme_eval(expressions.first, env) # replace this with lines of your own code
+    if expressions is nil:
+        return None
+    else:
+        val = scheme_eval(expressions.first, env)
+        if expressions.rest is nil:
+            return val
+        else:
+            return eval_all(expressions.rest, env)
     # END PROBLEM 6
 
 
