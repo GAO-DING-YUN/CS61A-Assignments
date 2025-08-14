@@ -24,15 +24,33 @@ CREATE TABLE sizes AS
   SELECT "Soda 310"   , 40              UNION
   SELECT "Soda 320"   , 30;
 
-CREATE TABLE sharing AS
-  SELECT "REPLACE THIS LINE WITH YOUR SOLUTION";
-
-CREATE TABLE pairs AS
-  SELECT "REPLACE THIS LINE WITH YOUR SOLUTION";
-
 CREATE TABLE big AS
-  SELECT "REPLACE THIS LINE WITH YOUR SOLUTION";
+  SELECT course 
+  FROM finals, sizes 
+    WHERE hall = room
+    GROUP BY course 
+    HAVING SUM(seats) >= 1000;
+
 
 CREATE TABLE remaining AS
-  SELECT "REPLACE THIS LINE WITH YOUR SOLUTION";
+  SELECT course, SUM(seats) - MAX(seats) As remaining
+    FROM finals, sizes
+    WHERE hall = room
+    GROUP BY course;
+
+CREATE TABLE sharing AS
+  SELECT a.course, COUNT(DISTINCT a.hall) AS shared
+    FROM finals AS a, finals AS b
+    WHERE  a.course != b.course and a.hall = b.hall
+    GROUP BY a.course;
+
+CREATE TABLE pairs AS
+  SELECT a.room || " and " || b.room || " together have " || (a.seats + b.seats) || " seats" AS rooms
+    FROM sizes AS a, sizes AS b 
+    WHERE a.seats + b.seats >= 1000 AND a.room < b.room
+    ORDER BY a.seats + b.seats DESC;
+
+
+
+
 
